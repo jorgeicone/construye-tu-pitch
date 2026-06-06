@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construye tu pitch con IA</title>
+<style>
+  :root{
+    --bg:#050d1f; --bg2:#0a1730; --panel:rgba(255,255,255,.04);
+    --cyan:#00d4ff; --purple:#7b2fff; --orange:#ff8c00;
+    --text:#eaf2ff; --muted:#90a3c4; --line:rgba(255,255,255,.10);
+    --ok:#27e0a3; --warn:#ffb347;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(123,47,255,.25), transparent 60%),
+      radial-gradient(1000px 600px at 90% 0%, rgba(0,212,255,.18), transparent 55%),
+      var(--bg);
+    color:var(--text); min-height:100vh; line-height:1.55;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 80px}
+  header.top{margin-bottom:18px}
+  .brand{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);font-weight:700;opacity:.9}
+  h1{font-size:clamp(30px,6vw,52px);line-height:1.05;margin:6px 0 8px;font-weight:800;
+     background:linear-gradient(90deg,#fff, #bcd6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);max-width:640px;font-size:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+  .chip{font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+        background:var(--panel);color:#cfe0ff}
+  .chip.on{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset;color:#fff}
+  .chip.done{border-color:var(--ok);color:#bff6e3}
+
+  .progress{height:8px;border-radius:999px;background:rgba(255,255,255,.07);margin:20px 0 26px;overflow:hidden}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .4s ease}
+
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+        border:1px solid var(--line);border-radius:20px;padding:26px;backdrop-filter:blur(6px);
+        box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .step-no{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+  h2{font-size:24px;margin:10px 0 4px;font-weight:800}
+  .q{color:#c9d8f5;font-size:15px;margin-bottom:14px}
+  textarea{width:100%;min-height:120px;resize:vertical;background:rgba(0,0,0,.25);border:1px solid var(--line);
+           border-radius:14px;color:var(--text);padding:14px 16px;font-size:15px;font-family:inherit;outline:none}
+  textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.15)}
+
+  .tip{margin-top:16px;border-left:3px solid var(--orange);background:rgba(255,140,0,.08);
+       padding:12px 16px;border-radius:0 12px 12px 0;font-size:14px;color:#ffe3c2}
+  .tip b{color:#ffd29a}
+  details.ex{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:0 14px;background:rgba(0,212,255,.04)}
+  details.ex summary{cursor:pointer;padding:12px 0;font-weight:700;color:var(--cyan);font-size:14px;list-style:none}
+  details.ex summary::-webkit-details-marker{display:none}
+  details.ex summary::before{content:"▸ ";color:var(--cyan)}
+  details.ex[open] summary::before{content:"▾ "}
+  details.ex p{margin:0 0 14px;font-size:14px;color:#cfe0ff}
+
+  .uploader{margin-top:18px}
+  .drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;cursor:pointer;
+        transition:.2s;background:rgba(255,255,255,.02);font-size:14px;color:var(--muted)}
+  .drop:hover{border-color:var(--purple);color:#dcd0ff;background:rgba(123,47,255,.06)}
+  .drop b{color:#cfe0ff}
+  .files{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .file{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);
+        border-radius:10px;padding:6px 10px;font-size:12.5px;max-width:220px}
+  .file img{width:34px;height:34px;object-fit:cover;border-radius:6px}
+  .file .x{cursor:pointer;color:#ff7b7b;font-weight:800;margin-left:2px}
+  .file .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;font-weight:700;font-size:15px;
+         padding:13px 22px;transition:.15s;color:#fff}
+  button:active{transform:translateY(1px)}
+  .ghost{background:transparent;border:1px solid var(--line);color:#cfe0ff}
+  .ghost:hover{border-color:var(--cyan)}
+  .primary{background:linear-gradient(90deg,var(--cyan),var(--purple))}
+  .primary:hover{filter:brightness(1.1)}
+  .primary:disabled{opacity:.4;cursor:not-allowed;filter:none}
+
+  /* RESULT */
+  .result h2{font-size:28px}
+  .script{white-space:pre-wrap;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:16px;
+          padding:22px;font-size:16px;line-height:1.7;margin-top:8px}
+  .wordcount{font-size:13px;color:var(--muted);margin-top:10px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .actions button{font-size:14px;padding:11px 16px}
+  .timer{display:flex;align-items:center;gap:16px;margin-top:22px;padding:16px 18px;border:1px solid var(--line);
+         border-radius:16px;background:rgba(0,212,255,.05)}
+  .clock{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;min-width:118px;
+         background:linear-gradient(90deg,var(--cyan),#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .clock.warn{background:linear-gradient(90deg,var(--orange),#ffd29a);-webkit-background-clip:text;color:transparent}
+  .clock.over{background:linear-gradient(90deg,#ff5b6e,#ff9aa6);-webkit-background-clip:text;color:transparent}
+  .timerbtns{display:flex;gap:8px}
+  .timerbtns button{padding:9px 16px;font-size:14px}
+  .ia-box{margin-top:18px;border:1px solid var(--purple);border-radius:16px;padding:18px;background:rgba(123,47,255,.08)}
+  .ia-box h3{margin:0 0 6px;font-size:16px;color:#dcd0ff}
+  .ia-box p{margin:0 0 12px;font-size:13.5px;color:#c9bdf5}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+         background:#0d1b38;border:1px solid var(--cyan);color:#fff;padding:12px 20px;border-radius:12px;
+         font-size:14px;font-weight:600;transition:.3s;pointer-events:none;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .footer{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px}
+  .save-note{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
+  @media print{
+    body{background:#fff;color:#000}
+    .nav,.actions,.timer,.ia-box,.uploader,.chips,.progress,.tip,details.ex,.footer,.save-note,header.top .sub{display:none!important}
+    .card{box-shadow:none;border:none}
+    .script{border:1px solid #ccc;color:#000;background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Taller de pitch · IA</div>
+    <h1>Construye tu pitch con IA</h1>
+    <p class="sub">Arma tu pitch de 60 segundos paso a paso. Integra el problema, tu solución, tu cliente ideal, qué te hace distinto y qué IAs usa tu negocio.</p>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <div class="progress"><div class="bar" id="bar"></div></div>
+
+  <div id="stepArea"></div>
+
+  <p class="save-note">💾 Tu avance se guarda automáticamente en este navegador. Puedes cerrar y volver.</p>
+  <div class="footer">Hecho para el taller · Comparte tu pitch y practícalo en voz alta.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA: pasos ---------------- */
+const STEPS = [
+  {
+    key:"problema", label:"Problema", title:"El problema",
+    q:"¿Qué problema real resuelve tu negocio? ¿A quién le duele y por qué importa?",
+    tip:"Empieza por el dolor, no por tu producto. Si el público siente el problema, te van a escuchar.",
+    example:"Las pymes pierden horas haciendo facturas a mano y cometen errores que les cuestan dinero y multas."
+  },
+  {
+    key:"solucion", label:"Solución", title:"Tu solución",
+    q:"¿Qué ofreces y cómo resuelve ese problema? Dilo simple, como si se lo explicaras a un amigo.",
+    tip:"Una frase clara vale más que cinco técnicas. Enfócate en el resultado que entregas, no en las funciones.",
+    example:"Una app que genera y envía facturas válidas en 30 segundos, sin errores y conectada al banco."
+  },
+  {
+    key:"cliente", label:"Cliente ideal", title:"Tu cliente ideal",
+    q:"¿Quién es exactamente tu cliente ideal? Edad, ocupación, situación o tipo de empresa.",
+    tip:"Si le hablas a todos, no le hablas a nadie. Mientras más específico, más memorable tu pitch.",
+    example:"Dueños de pymes de servicios, 30-50 años, que facturan solos y no tienen contador de planta."
+  },
+  {
+    key:"distinto", label:"Qué lo hace distinto", title:"Qué te hace distinto",
+    q:"¿Por qué elegirte a ti y no a la competencia o a hacerlo a mano? Tu factor diferencial.",
+    tip:"Tu diferencial debe ser difícil de copiar: rapidez, precio, experiencia, comunidad o tecnología propia.",
+    example:"Somos los únicos que conectamos la factura con el banco y damos soporte por WhatsApp en minutos."
+  },
+  {
+    key:"ias", label:"Qué IAs usa", title:"Qué IAs usa tu negocio",
+    q:"¿Qué herramientas de IA usas y para qué? (atención al cliente, contenido, análisis, operación, etc.)",
+    tip:"Muestra que tu negocio es moderno y eficiente. Nombra la IA y el resultado concreto que te da.",
+    example:"Uso ChatGPT para responder dudas frecuentes y crear contenido, y un modelo propio que detecta errores en las facturas."
+  }
+];
+
+const state = { step:0, answers:{}, files:{} }; // files[key] = [{name,type,thumb}]
+STEPS.forEach(s=>{ state.answers[s.key]=""; state.files[s.key]=[]; });
+const TOTAL = STEPS.length;          // pasos de contenido
+const RESULT_INDEX = TOTAL;          // índice del paso resultado
+
+/* ---------------- PERSISTENCIA ---------------- */
+const LS="pitch_builder_v1";
+function save(){ try{ localStorage.setItem(LS, JSON.stringify({answers:state.answers, files:state.files, step:state.step})); }catch(e){} }
+function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d){ Object.assign(state.answers,d.answers||{}); if(d.files)Object.assign(state.files,d.files); state.step=d.step||0; } }catch(e){} }
+load();
+
+/* ---------------- HELPERS ---------------- */
+const $=s=>document.querySelector(s);
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------------- CHIPS ---------------- */
+function renderChips(){
+  const c=$("#chips"); c.innerHTML="";
+  STEPS.forEach((s,i)=>{
+    const el=document.createElement("span");
+    el.className="chip"+(state.step===i?" on":"")+(state.answers[s.key].trim()?" done":"");
+    el.textContent=s.label;
+    el.onclick=()=>{ state.step=i; render(); };
+    c.appendChild(el);
+  });
+  const r=document.createElement("span");
+  r.className="chip"+(state.step===RESULT_INDEX?" on":"");
+  r.textContent="🎤 Mi pitch";
+  r.onclick=()=>{ state.step=RESULT_INDEX; render(); };
+  c.appendChild(r);
+}
+
+/* ---------------- PROGRESS ---------------- */
+function renderBar(){
+  const filled = STEPS.filter(s=>state.answers[s.key].trim()).length;
+  $("#bar").style.width = Math.round((filled/TOTAL)*100)+"%";
+}
+
+/* ---------------- FILE UPLOAD ---------------- */
+function handleFiles(key, fileList){
+  Array.from(fileList).forEach(f=>{
+    const item={name:f.name, type:f.type, thumb:null};
+    if(f.type.startsWith("image/")){
+      const reader=new FileReader();
+      reader.onload=e=>{ item.thumb=e.target.result; save(); render(); };
+      reader.readAsDataURL(f);
+    }
+    state.files[key].push(item);
+  });
+  save(); render();
+}
+function removeFile(key,idx){ state.files[key].splice(idx,1); save(); render(); }
+
+/* ---------------- RENDER STEP ---------------- */
+function renderStep(){
+  const area=$("#stepArea");
+  if(state.step===RESULT_INDEX){ renderResult(); return; }
+  const s=STEPS[state.step];
+  const files=state.files[s.key];
+  area.innerHTML=`
+    <div class="card">
+      <span class="step-no"><span class="dot"></span> Paso ${state.step+1} de ${TOTAL}</span>
+      <h2>${s.title}</h2>
+      <p class="q">${s.q}</p>
+      <textarea id="ta" placeholder="Escribe aquí...">${esc(state.answers[s.key])}</textarea>
+      <div class="tip"><b>💡 Tip:</b> ${s.tip}</div>
+      <details class="ex"><summary>Ver un ejemplo</summary><p>“${s.example}”</p></details>
+
+      <div class="uploader">
+        <div class="drop" id="drop">📎 <b>Sube fotos, documentos o datos</b> que apoyen este punto<br><span style="font-size:12.5px">(arrastra aquí o haz clic · opcional)</span></div>
+        <input type="file" id="fileInput" multiple style="display:none">
+        <div class="files" id="filelist"></div>
+      </div>
+
+      <div class="nav">
+        <button class="ghost" id="prev" ${state.step===0?"disabled style='opacity:.4;cursor:not-allowed'":""}>← Anterior</button>
+        <button class="primary" id="next">${state.step===TOTAL-1?"Generar mi pitch 🎤":"Siguiente →"}</button>
+      </div>
+    </div>`;
+
+  const ta=$("#ta");
+  ta.addEventListener("input",()=>{ state.answers[s.key]=ta.value; save(); renderChips(); renderBar(); });
+
+  // files
+  const fl=$("#filelist"); fl.innerHTML="";
+  files.forEach((f,i)=>{
+    const d=document.createElement("div"); d.className="file";
+    d.innerHTML=(f.thumb?`<img src="${f.thumb}">`:`📄`)+`<span class="nm">${esc(f.name)}</span><span class="x" data-i="${i}">✕</span>`;
+    d.querySelector(".x").onclick=()=>removeFile(s.key,i);
+    fl.appendChild(d);
+  });
+  const inp=$("#fileInput"), drop=$("#drop");
+  drop.onclick=()=>inp.click();
+  inp.onchange=e=>handleFiles(s.key,e.target.files);
+  drop.ondragover=e=>{e.preventDefault();drop.style.borderColor="#7b2fff";};
+  drop.ondragleave=()=>{drop.style.borderColor="";};
+  drop.ondrop=e=>{e.preventDefault();drop.style.borderColor="";handleFiles(s.key,e.dataTransfer.files);};
+
+  $("#prev").onclick=()=>{ if(state.step>0){state.step--;render();} };
+  $("#next").onclick=()=>{ state.step++; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+}
+
+/* ---------------- GENERAR GUION ---------------- */
+function buildScript(){
+  const a=state.answers;
+  const parts=[];
+  if(a.problema.trim()) parts.push(`¿Sabías que ${a.problema.trim().replace(/\.$/,"")}?`);
+  if(a.solucion.trim()) parts.push(`Por eso creamos ${a.solucion.trim().replace(/\.$/,"")}.`);
+  if(a.cliente.trim())  parts.push(`Lo hicimos pensando en ${a.cliente.trim().replace(/\.$/,"")}.`);
+  if(a.distinto.trim()) parts.push(`Lo que nos hace distintos: ${a.distinto.trim().replace(/\.$/,"")}.`);
+  if(a.ias.trim())      parts.push(`Y para lograrlo usamos inteligencia artificial: ${a.ias.trim().replace(/\.$/,"")}.`);
+  parts.push(`Si esto te suena, hablemos. 🚀`);
+  return parts.join("\n\n");
+}
+function missingFields(){ return STEPS.filter(s=>!state.answers[s.key].trim()).map(s=>s.label); }
+
+function renderResult(){
+  const area=$("#stepArea");
+  const script=buildScript();
+  const words=script.trim().split(/\s+/).filter(Boolean).length;
+  const missing=missingFields();
+  area.innerHTML=`
+    <div class="card result">
+      <span class="step-no"><span class="dot"></span> Tu pitch de 60 segundos</span>
+      <h2>🎤 Mi pitch</h2>
+      ${missing.length?`<div class="tip"><b>Faltan datos:</b> ${missing.join(", ")}. Complétalos para un mejor pitch, o usa “Completar con IA”.</div>`:""}
+      <div class="script" id="script">${esc(script)}</div>
+      <div class="wordcount">📊 ${words} palabras · ideal para leer en ~${Math.max(15,Math.round(words/2.7))} segundos (apunta a 130–160 palabras para 60s).</div>
+
+      <div class="actions">
+        <button class="primary" id="copy">📋 Copiar pitch</button>
+        <button class="ghost" id="dltxt">⬇ Descargar TXT</button>
+        <button class="ghost" id="dlpdf">🖨 Descargar PDF</button>
+        <button class="ghost" id="edit">✏️ Editar respuestas</button>
+      </div>
+
+      <div class="timer">
+        <div class="clock" id="clock">01:00</div>
+        <div class="timerbtns">
+          <button class="primary" id="tstart">▶ Practicar 60s</button>
+          <button class="ghost" id="treset">↺ Reiniciar</button>
+        </div>
+      </div>
+
+      <div class="ia-box">
+        <h3>🤖 Completar con IA lo que falta</h3>
+        <p>Genera un mensaje listo con tus respuestas y archivos. Cópialo y pégalo en ChatGPT, Claude o Gemini: la IA pulirá tu pitch y completará lo que falte.</p>
+        <button class="primary" id="iaprompt">✨ Generar mensaje para la IA</button>
+      </div>
+    </div>`;
+
+  $("#copy").onclick=()=>{ navigator.clipboard.writeText(buildScript()).then(()=>toast("¡Pitch copiado! ✅")); };
+  $("#dltxt").onclick=()=>downloadText("mi-pitch.txt", buildScript());
+  $("#dlpdf").onclick=()=>window.print();
+  $("#edit").onclick=()=>{ state.step=0; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+  $("#iaprompt").onclick=()=>{ navigator.clipboard.writeText(buildAIPrompt()).then(()=>toast("Mensaje para la IA copiado. Pégalo en tu IA ✨")); };
+
+  setupTimer();
+}
+
+/* ---------------- PROMPT PARA IA ---------------- */
+function buildAIPrompt(){
+  const a=state.answers;
+  let p="Actúa como experto en marketing y oratoria. Ayúdame a pulir y completar mi pitch de 60 segundos (130-160 palabras) para presentar mi negocio. ";
+  p+="Si algún punto está vacío o incompleto, propón una versión sugerida basada en el resto y márcala como [SUGERENCIA].\n\n";
+  p+="Mis respuestas:\n";
+  STEPS.forEach(s=>{
+    const val=a[s.key].trim();
+    p+=`- ${s.title}: ${val?val:"(vacío, por favor complétalo)"}\n`;
+    const fs=state.files[s.key];
+    if(fs && fs.length) p+=`   (Archivos de apoyo que tengo: ${fs.map(f=>f.name).join(", ")})\n`;
+  });
+  p+="\nEntrégame: 1) el pitch final listo para leer en voz alta, 2) una versión corta de 1 frase (elevator pitch), 3) 2 consejos para decirlo con más impacto.";
+  return p;
+}
+
+/* ---------------- TIMER ---------------- */
+let tInt=null, tLeft=60;
+function fmt(n){ const m=Math.floor(Math.abs(n)/60), s=Math.abs(n)%60; return (n<0?"-":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"); }
+function setupTimer(){
+  tLeft=60; const clock=$("#clock"); clock.textContent="01:00"; clock.className="clock";
+  $("#tstart").onclick=()=>{
+    if(tInt){ clearInterval(tInt); tInt=null; $("#tstart").textContent="▶ Practicar 60s"; return; }
+    $("#tstart").textContent="⏸ Pausar";
+    tInt=setInterval(()=>{
+      tLeft--; clock.textContent=fmt(tLeft);
+      clock.className="clock"+(tLeft<=10&&tLeft>0?" warn":"")+(tLeft<0?" over":"");
+      if(tLeft===0) toast("⏰ ¡60 segundos! ¿Cabe tu pitch?");
+    },1000);
+  };
+  $("#treset").onclick=()=>{ if(tInt){clearInterval(tInt);tInt=null;} tLeft=60; clock.textContent="01:00"; clock.className="clock"; $("#tstart").textContent="▶ Practicar 60s"; };
+}
+
+/* ---------------- DOWNLOAD ---------------- */
+function downloadText(filename,text){
+  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob); const a=document.createElement("a");
+  a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); toast("Descargado ⬇");
+}
+
+/* ---------------- MAIN RENDER ---------------- */
+function render(){ renderChips(); renderBar(); renderStep(); save(); }
+render();
+</script>
+</body>
+</html>
