@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Construye tu pitch con IA</title>
-<meta name="description" content="Taller interactivo para construir tu pitch de 60 segundos con IA.">
+<meta name="description" content="Taller interactivo para construir tu pitch de 60 segundos con IA. Por Ing. Jorge Hugo Pérez · ICONE ialabs.">
+<meta name="author" content="Ing. Jorge Hugo Pérez - ICONE ialabs">
 <style>
   :root{
     --bg:#050d1f; --bg2:#0a1730; --panel:rgba(255,255,255,.04);
@@ -22,21 +23,19 @@
       var(--bg);
     color:var(--text); min-height:100vh; line-height:1.55; overflow-x:hidden;
   }
-  /* PARTICLES */
   #particles{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .wrap{position:relative;z-index:2;max-width:880px;margin:0 auto;padding:30px 20px 70px}
-
-  /* GLOW ORBS */
   .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.4;z-index:1;pointer-events:none;animation:float 14s ease-in-out infinite}
   .orb.a{width:340px;height:340px;background:var(--purple);top:-80px;left:-60px}
   .orb.b{width:300px;height:300px;background:var(--cyan);bottom:-100px;right:-80px;animation-delay:-7s}
   @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
-
   header.top{margin-bottom:16px;animation:fadeUp .6s ease both}
   .brand{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);font-weight:700;opacity:.9}
   h1{font-size:clamp(30px,6vw,52px);line-height:1.05;margin:6px 0 8px;font-weight:800;
      background:linear-gradient(90deg,#fff, #bcd6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
   .sub{color:var(--muted);max-width:640px;font-size:16px}
+  .byline{margin-top:10px;font-size:13px;color:#9fb4d8}
+  .byline b{color:#cfe0ff}.byline .ic{color:var(--cyan)}
   .chips{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
   .chip{font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);
         background:var(--panel);color:#cfe0ff;cursor:pointer;transition:.18s}
@@ -44,17 +43,14 @@
   .chip.on{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset, 0 0 18px rgba(0,212,255,.35);color:#fff}
   .chip.done{border-color:var(--ok);color:#bff6e3}
   .chip.done::before{content:"✓ "}
-
   .progress{height:8px;border-radius:999px;background:rgba(255,255,255,.07);margin:18px 0 24px;overflow:hidden}
   .bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 14px rgba(0,212,255,.5)}
-
   .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
         border:1px solid var(--line);border-radius:22px;padding:28px;backdrop-filter:blur(8px);
         box-shadow:0 20px 60px rgba(0,0,0,.45)}
   .anim{animation:cardIn .45s cubic-bezier(.2,.8,.2,1) both}
   @keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-
   .step-no{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600}
   .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -67,7 +63,6 @@
   textarea{width:100%;min-height:120px;resize:vertical;background:rgba(0,0,0,.25);border:1px solid var(--line);
            border-radius:14px;color:var(--text);padding:14px 16px;font-size:15px;font-family:inherit;outline:none;transition:.15s}
   textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.15)}
-
   .tip{margin-top:16px;border-left:3px solid var(--orange);background:rgba(255,140,0,.08);
        padding:12px 16px;border-radius:0 12px 12px 0;font-size:14px;color:#ffe3c2}
   .tip b{color:#ffd29a}
@@ -77,7 +72,6 @@
   details.ex summary::before{content:"▸ ";color:var(--cyan)}
   details.ex[open] summary::before{content:"▾ "}
   details.ex p{margin:0 0 14px;font-size:14px;color:#cfe0ff}
-
   .uploader{margin-top:18px}
   .drop{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;cursor:pointer;
         transition:.2s;background:rgba(255,255,255,.02);font-size:14px;color:var(--muted)}
@@ -89,7 +83,6 @@
   .file img{width:34px;height:34px;object-fit:cover;border-radius:6px}
   .file .x{cursor:pointer;color:#ff7b7b;font-weight:800;margin-left:2px}
   .file .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
   .nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px}
   button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;font-weight:700;font-size:15px;
          padding:13px 22px;transition:.15s;color:#fff}
@@ -100,8 +93,6 @@
   .primary:hover{filter:brightness(1.1);box-shadow:0 10px 30px rgba(0,212,255,.4)}
   .primary:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none}
   .big{font-size:17px;padding:16px 30px}
-
-  /* WELCOME */
   .welcome{text-align:center}
   .welcome .emoji{font-size:54px;margin-bottom:6px;display:block;animation:pop .6s both}
   @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
@@ -110,8 +101,6 @@
   .wsteps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 auto 26px;max-width:620px}
   .wsteps span{font-size:12.5px;background:rgba(0,212,255,.08);border:1px solid var(--line);border-radius:999px;padding:7px 13px;color:#cfe0ff}
   .welcome input{max-width:360px;margin:0 auto 18px;text-align:center}
-
-  /* RESULT */
   .result h2{font-size:28px}
   .script{white-space:pre-wrap;background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:16px;
           padding:22px;font-size:16px;line-height:1.7;margin-top:8px}
@@ -129,19 +118,15 @@
   .ia-box{margin-top:18px;border:1px solid var(--purple);border-radius:16px;padding:18px;background:rgba(123,47,255,.08)}
   .ia-box h3{margin:0 0 6px;font-size:16px;color:#dcd0ff}
   .ia-box p{margin:0 0 12px;font-size:13.5px;color:#c9bdf5}
-
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
          background:#0d1b38;border:1px solid var(--cyan);color:#fff;padding:12px 20px;border-radius:12px;
          font-size:14px;font-weight:600;transition:.3s;pointer-events:none;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.5)}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
   .savebar{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:16px}
   .savedot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
   .footer{margin-top:30px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7}
   .footer a{color:var(--cyan);cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--cyan)}
   .footer a:hover{color:#fff}
-
-  /* MODAL LEGAL */
   .modal{position:fixed;inset:0;background:rgba(3,8,20,.78);backdrop-filter:blur(4px);z-index:90;
          display:none;align-items:center;justify-content:center;padding:20px}
   .modal.show{display:flex;animation:fadeUp .25s both}
@@ -152,7 +137,6 @@
   .modal p{font-size:14px;color:#cfe0ff;margin:0 0 12px}
   .modal .close{margin-top:8px}
   .legal-foot{font-size:11.5px;color:#6f82a6;margin-top:6px}
-
   @media print{
     #particles,.orb,.nav,.actions,.timer,.ia-box,.uploader,.chips,.progress,.tip,details.ex,.footer,.savebar,.modal,header.top .sub{display:none!important}
     body{background:#fff;color:#000}
@@ -168,9 +152,10 @@
 
 <div class="wrap">
   <header class="top">
-    <div class="brand">Taller de pitch · IA</div>
+    <div class="brand">ICONE ialabs · Taller de pitch con IA</div>
     <h1>Construye tu pitch con IA</h1>
     <p class="sub">Arma tu pitch de 60 segundos paso a paso. Integra el problema, tu solución, tu cliente ideal, qué te hace distinto y qué IAs usa tu negocio.</p>
+    <p class="byline">Creado por el <b>Ing. Jorge Hugo Pérez</b> para <span class="ic">ICONE ialabs</span></p>
     <div class="chips" id="chips"></div>
   </header>
 
@@ -181,23 +166,23 @@
   <div class="savebar" id="savebar"><span class="savedot"></span><span id="savetxt">Tu avance se guarda en este navegador</span> · <a id="resetAll" style="color:var(--cyan);cursor:pointer;border-bottom:1px dotted var(--cyan)">Empezar de nuevo</a></div>
 
   <div class="footer">
+    Creado por el <b style="color:#cfe0ff">Ing. Jorge Hugo Pérez</b> para <b style="color:var(--cyan)">ICONE ialabs</b><br>
     © <span id="year"></span> · Material educativo de uso gratuito para estudiantes.
     <a id="openLegal">Términos de uso y no reproducción</a><br>
     <span class="legal-foot">Prohibida su reproducción, venta o redistribución total o parcial sin autorización escrita del autor.</span>
   </div>
 </div>
 
-<!-- MODAL LEGAL -->
 <div class="modal" id="legalModal">
   <div class="box">
     <h3>Términos de uso y no reproducción</h3>
-    <div class="small">Última actualización: <span id="legalYear"></span></div>
+    <div class="small">Autor: Ing. Jorge Hugo Pérez · ICONE ialabs · <span id="legalYear"></span></div>
     <p><b>1. Licencia de uso.</b> Esta herramienta se entrega de forma <b>gratuita</b> y exclusiva con fines <b>educativos y personales</b> a los estudiantes participantes del taller. Su uso está permitido únicamente para construir y practicar su propio pitch.</p>
-    <p><b>2. Propiedad intelectual.</b> El diseño, la estructura metodológica, los textos, el código y la identidad visual de esta herramienta son propiedad de su autor y están protegidos por las leyes de derechos de autor.</p>
-    <p><b>3. Prohibiciones.</b> Queda <b>expresamente prohibido</b>, sin autorización previa y por escrito del autor: copiar, reproducir, modificar, distribuir, revender, comercializar, publicar o reutilizar total o parcialmente esta herramienta, su código o su metodología, ya sea con fines comerciales o gratuitos.</p>
+    <p><b>2. Propiedad intelectual.</b> El diseño, la estructura metodológica, los textos, el código y la identidad visual de esta herramienta son propiedad de su autor, el <b>Ing. Jorge Hugo Pérez (ICONE ialabs)</b>, y están protegidos por las leyes de derechos de autor.</p>
+    <p><b>3. Prohibiciones.</b> Queda <b>expresamente prohibido</b>, sin autorización previa y por escrito del autor (Ing. Jorge Hugo Pérez · ICONE ialabs): copiar, reproducir, modificar, distribuir, revender, comercializar, publicar o reutilizar total o parcialmente esta herramienta, su código o su metodología, ya sea con fines comerciales o gratuitos.</p>
     <p><b>4. Contenido del estudiante.</b> Las respuestas, textos y archivos que cargues son <b>tuyos</b> y se guardan <b>solo en tu navegador</b> (no se envían a ningún servidor). El autor no accede a esa información ni se hace responsable de su pérdida si borras los datos del navegador.</p>
     <p><b>5. Sin garantías.</b> La herramienta se ofrece "tal cual", como apoyo pedagógico. Las sugerencias generadas son orientativas y no constituyen asesoría profesional.</p>
-    <p class="legal-foot">El uso de esta herramienta implica la aceptación de estos términos.</p>
+    <p class="legal-foot">El uso de esta herramienta implica la aceptación de estos términos. © <span id="legalYear2"></span> Ing. Jorge Hugo Pérez — ICONE ialabs. Todos los derechos reservados.</p>
     <button class="primary close" id="closeLegal">Entendido</button>
   </div>
 </div>
@@ -205,7 +190,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ---------------- DATA ---------------- */
 const STEPS = [
   {key:"problema", label:"Problema", title:"El problema",
    q:"¿Qué problema real resuelve tu negocio? ¿A quién le duele y por qué importa?",
@@ -234,7 +218,6 @@ STEPS.forEach(s=>{ state.answers[s.key]=""; state.files[s.key]=[]; });
 const TOTAL = STEPS.length;
 const RESULT_INDEX = TOTAL;
 
-/* ---------------- PERSISTENCIA ---------------- */
 const LS="pitch_builder_v2";
 function save(){ try{ localStorage.setItem(LS, JSON.stringify({name:state.name,answers:state.answers,files:state.files,step:state.step,ts:Date.now()})); flashSaved(); }catch(e){ warnQuota(e); } }
 function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d){ state.name=d.name||""; Object.assign(state.answers,d.answers||{}); if(d.files)Object.assign(state.files,d.files); state.step=(typeof d.step==="number")?d.step:-1; } }catch(e){} }
@@ -243,12 +226,10 @@ let saveTimer=null;
 function flashSaved(){ const t=$("#savetxt"); if(!t)return; t.textContent="Guardado ✓"; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ if($("#savetxt")) $("#savetxt").textContent="Tu avance se guarda en este navegador"; },1500); }
 function warnQuota(){ toast("⚠ Archivo muy grande para guardar. Quita alguna imagen pesada."); }
 
-/* ---------------- HELPERS ---------------- */
 function $(s){return document.querySelector(s);}
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2400); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-/* ---------------- CHIPS / PROGRESS ---------------- */
 function renderChips(){
   const c=$("#chips"); c.innerHTML="";
   STEPS.forEach((s,i)=>{
@@ -269,7 +250,6 @@ function renderChips(){
 }
 function renderBar(){ const filled=STEPS.filter(s=>state.answers[s.key].trim()).length; $("#bar").style.width=Math.round((filled/TOTAL)*100)+"%"; }
 
-/* ---------------- FILES ---------------- */
 function handleFiles(key, fileList){
   Array.from(fileList).forEach(f=>{
     const item={name:f.name, type:f.type, thumb:null};
@@ -284,7 +264,6 @@ function handleFiles(key, fileList){
 }
 function removeFile(key,idx){ state.files[key].splice(idx,1); save(); render(); }
 
-/* ---------------- WELCOME ---------------- */
 function renderWelcome(){
   $("#stepArea").innerHTML=`
     <div class="card anim welcome">
@@ -306,7 +285,6 @@ function renderWelcome(){
   $("#wstart").onclick=()=>{ state.step=Math.max(0,state.step); render(); window.scrollTo({top:0,behavior:"smooth"}); };
 }
 
-/* ---------------- STEP ---------------- */
 function renderStep(){
   const area=$("#stepArea");
   if(state.step===-1){ renderWelcome(); return; }
@@ -350,7 +328,6 @@ function renderStep(){
   $("#next").onclick=()=>{ state.step++; render(); window.scrollTo({top:0,behavior:"smooth"}); };
 }
 
-/* ---------------- SCRIPT ---------------- */
 function buildScript(){
   const a=state.answers; const parts=[];
   if(a.problema.trim()) parts.push(`¿Sabías que ${a.problema.trim().replace(/\.$/,"")}?`);
@@ -418,7 +395,6 @@ function buildAIPrompt(){
   return p;
 }
 
-/* ---------------- TIMER ---------------- */
 let tInt=null, tLeft=60;
 function fmt(n){ const m=Math.floor(Math.abs(n)/60), s=Math.abs(n)%60; return (n<0?"-":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"); }
 function setupTimer(){
@@ -434,14 +410,12 @@ function setupTimer(){
   $("#treset").onclick=()=>{ if(tInt){clearInterval(tInt);tInt=null;} tLeft=60; clock.textContent="01:00"; clock.className="clock"; $("#tstart").textContent="▶ Practicar 60s"; };
 }
 
-/* ---------------- DOWNLOAD ---------------- */
 function downloadText(filename,text){
   const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
   const url=URL.createObjectURL(blob); const a=document.createElement("a");
   a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); toast("Descargado ⬇");
 }
 
-/* ---------------- LEGAL MODAL + RESET ---------------- */
 $("#openLegal").onclick=()=>$("#legalModal").classList.add("show");
 $("#closeLegal").onclick=()=>$("#legalModal").classList.remove("show");
 $("#legalModal").onclick=e=>{ if(e.target.id==="legalModal") $("#legalModal").classList.remove("show"); };
@@ -450,10 +424,10 @@ $("#resetAll").onclick=()=>{
     localStorage.removeItem(LS); location.reload();
   }
 };
-$("#year").textContent=new Date().getFullYear();
-$("#legalYear").textContent=new Date().getFullYear();
+const Y=new Date().getFullYear();
+$("#year").textContent=Y; $("#legalYear").textContent=Y;
+if($("#legalYear2")) $("#legalYear2").textContent=Y;
 
-/* ---------------- PARTICLES ---------------- */
 (function(){
   const cv=document.getElementById("particles"), ctx=cv.getContext("2d");
   let w,h,pts; const N=Math.min(70, Math.floor(window.innerWidth/22));
@@ -477,9 +451,9 @@ $("#legalYear").textContent=new Date().getFullYear();
   window.addEventListener("resize",()=>{ resize(); init(); });
 })();
 
-/* ---------------- MAIN ---------------- */
 function render(){ renderChips(); renderBar(); renderStep(); save(); }
 render();
 </script>
 </body>
 </html>
+                   
