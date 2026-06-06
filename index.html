@@ -77,9 +77,12 @@
         transition:.2s;background:rgba(255,255,255,.02);font-size:14px;color:var(--muted)}
   .drop:hover{border-color:var(--purple);color:#dcd0ff;background:rgba(123,47,255,.06)}
   .drop b{color:#cfe0ff}
+  .linkrow{display:flex;gap:8px;margin-top:12px}
+  .linkrow input{flex:1}
+  .linkrow button{padding:11px 16px;font-size:14px;white-space:nowrap}
   .files{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   .file{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);
-        border-radius:10px;padding:6px 10px;font-size:12.5px;max-width:220px;animation:cardIn .3s both}
+        border-radius:10px;padding:6px 10px;font-size:12.5px;max-width:240px;animation:cardIn .3s both}
   .file img{width:34px;height:34px;object-fit:cover;border-radius:6px}
   .file .x{cursor:pointer;color:#ff7b7b;font-weight:800;margin-left:2px}
   .file .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -105,6 +108,7 @@
   .script{white-space:pre-wrap;background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:16px;
           padding:22px;font-size:16px;line-height:1.7;margin-top:8px}
   .wordcount{font-size:13px;color:var(--muted);margin-top:10px}
+  .corrnote{font-size:12.5px;color:#bff6e3;margin-top:6px}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
   .actions button{font-size:14px;padding:11px 16px}
   .timer{display:flex;align-items:center;gap:16px;margin-top:22px;padding:16px 18px;border:1px solid var(--line);
@@ -115,7 +119,7 @@
   .clock.over{background:linear-gradient(90deg,#ff5b6e,#ff9aa6);-webkit-background-clip:text;color:transparent}
   .timerbtns{display:flex;gap:8px}
   .timerbtns button{padding:9px 16px;font-size:14px}
-  .ia-box{margin-top:18px;border:1px solid var(--purple);border-radius:16px;padding:18px;background:rgba(123,47,255,.08)}
+  .ia-box{margin-top:16px;border:1px solid var(--purple);border-radius:16px;padding:18px;background:rgba(123,47,255,.10)}
   .ia-box h3{margin:0 0 6px;font-size:16px;color:#dcd0ff}
   .ia-box p{margin:0 0 12px;font-size:13.5px;color:#c9bdf5}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
@@ -180,7 +184,7 @@
     <p><b>1. Licencia de uso.</b> Esta herramienta se entrega de forma <b>gratuita</b> y exclusiva con fines <b>educativos y personales</b> a los estudiantes participantes del taller. Su uso está permitido únicamente para construir y practicar su propio pitch.</p>
     <p><b>2. Propiedad intelectual.</b> El diseño, la estructura metodológica, los textos, el código y la identidad visual de esta herramienta son propiedad de su autor, el <b>Ing. Jorge Hugo Pérez (ICONE ialabs)</b>, y están protegidos por las leyes de derechos de autor.</p>
     <p><b>3. Prohibiciones.</b> Queda <b>expresamente prohibido</b>, sin autorización previa y por escrito del autor (Ing. Jorge Hugo Pérez · ICONE ialabs): copiar, reproducir, modificar, distribuir, revender, comercializar, publicar o reutilizar total o parcialmente esta herramienta, su código o su metodología, ya sea con fines comerciales o gratuitos.</p>
-    <p><b>4. Contenido del estudiante.</b> Las respuestas, textos y archivos que cargues son <b>tuyos</b> y se guardan <b>solo en tu navegador</b> (no se envían a ningún servidor). El autor no accede a esa información ni se hace responsable de su pérdida si borras los datos del navegador.</p>
+    <p><b>4. Contenido del estudiante.</b> Las respuestas, textos, archivos y enlaces que cargues son <b>tuyos</b> y se guardan <b>solo en tu navegador</b> (no se envían a ningún servidor). El autor no accede a esa información ni se hace responsable de su pérdida si borras los datos del navegador.</p>
     <p><b>5. Sin garantías.</b> La herramienta se ofrece "tal cual", como apoyo pedagógico. Las sugerencias generadas son orientativas y no constituyen asesoría profesional.</p>
     <p class="legal-foot">El uso de esta herramienta implica la aceptación de estos términos. © <span id="legalYear2"></span> Ing. Jorge Hugo Pérez — ICONE ialabs. Todos los derechos reservados.</p>
     <button class="primary close" id="closeLegal">Entendido</button>
@@ -213,23 +217,57 @@ const STEPS = [
    example:"Uso ChatGPT para responder dudas frecuentes y crear contenido, y un modelo propio que detecta errores en las facturas."}
 ];
 
-const state = { step:-1, name:"", answers:{}, files:{} };
-STEPS.forEach(s=>{ state.answers[s.key]=""; state.files[s.key]=[]; });
+const state = { step:-1, name:"", answers:{}, files:{}, links:{} };
+STEPS.forEach(s=>{ state.answers[s.key]=""; state.files[s.key]=[]; state.links[s.key]=[]; });
 const TOTAL = STEPS.length;
 const RESULT_INDEX = TOTAL;
 
-const LS="pitch_builder_v2";
-function save(){ try{ localStorage.setItem(LS, JSON.stringify({name:state.name,answers:state.answers,files:state.files,step:state.step,ts:Date.now()})); flashSaved(); }catch(e){ warnQuota(e); } }
-function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d){ state.name=d.name||""; Object.assign(state.answers,d.answers||{}); if(d.files)Object.assign(state.files,d.files); state.step=(typeof d.step==="number")?d.step:-1; } }catch(e){} }
+/* ---------- AUTOCORRECCIÓN ---------- */
+const TYPOS = {
+  "q":"que","k":"que","ke":"que","xq":"porque","pq":"porque","porq":"porque","xfa":"por favor","porfa":"por favor","porfis":"por favor","tb":"también","tmb":"también","bn":"bien",
+  "osea":"o sea","aveces":"a veces","talvez":"tal vez","enserio":"en serio","derrepente":"de repente","sobretodo":"sobre todo","amenudo":"a menudo","apesar":"a pesar","atravez":"a través","através":"a través","porcierto":"por cierto",
+  "tambien":"también","ademas":"además","asi":"así","aqui":"aquí","aca":"acá","ahi":"ahí","alli":"allí","alla":"allá","mas":"más","facil":"fácil","faciles":"fáciles","dificil":"difícil","dificiles":"difíciles","rapido":"rápido","rapida":"rápida","rapidos":"rápidos","rapidas":"rápidas","comun":"común","segun":"según","ningun":"ningún","algun":"algún","haci":"así","aser":"hacer",
+  "dia":"día","dias":"días","via":"vía","pais":"país","paises":"países",
+  "tecnologia":"tecnología","economia":"economía","energia":"energía","categoria":"categoría","categorias":"categorías","garantia":"garantía","compania":"compañía","companias":"compañías",
+  "telefono":"teléfono","numero":"número","numeros":"números","metodo":"método","metodos":"métodos","publico":"público","publicos":"públicos","unico":"único","unica":"única","unicos":"únicos","unicas":"únicas","ultimo":"último","ultima":"última","proximo":"próximo","proxima":"próxima","pagina":"página","paginas":"páginas","analisis":"análisis","credito":"crédito","creditos":"créditos","ingles":"inglés","espanol":"español",
+  "accion":"acción","atencion":"atención","solucion":"solución","gestion":"gestión","informacion":"información","aplicacion":"aplicación","operacion":"operación","innovacion":"innovación","comunicacion":"comunicación","produccion":"producción","educacion":"educación","creacion":"creación","relacion":"relación","direccion":"dirección","promocion":"promoción","posicion":"posición","decision":"decisión","vision":"visión","mision":"misión","conexion":"conexión","emocion":"emoción","reputacion":"reputación","situacion":"situación","funcion":"función","opcion":"opción","precision":"precisión","fidelizacion":"fidelización","optimizacion":"optimización","automatizacion":"automatización","digitalizacion":"digitalización","organizacion":"organización","facturacion":"facturación","capacitacion":"capacitación",
+  "deberia":"debería","podria":"podría","tendria":"tendría","haria":"haría","gustaria":"gustaría","queria":"quería","tenia":"tenía","habia":"había","veia":"veía","creia":"creía","estan":"están"
+};
+function fixWord(w){
+  const lower=w.toLowerCase();
+  if(Object.prototype.hasOwnProperty.call(TYPOS,lower)){
+    let r=TYPOS[lower];
+    const first=w.charAt(0);
+    if(first!==first.toLowerCase() && first===first.toUpperCase()) r=r.charAt(0).toUpperCase()+r.slice(1);
+    return r;
+  }
+  return w;
+}
+function autoCorrect(t){
+  if(!t) return "";
+  let s=t.replace(/\s+/g,' ').trim();
+  s=s.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, fixWord);
+  s=s.replace(/\s+([,.;:!?])/g,'$1');
+  s=s.replace(/([,;:])(?=\S)/g,'$1 ');
+  s=s.replace(/(^|[.!?¿¡]\s*)([a-záéíóúüñ])/g,(m,p,c)=>p+c.toUpperCase());
+  return s;
+}
+
+/* ---------- PERSISTENCIA ---------- */
+const LS="pitch_builder_v3";
+function save(){ try{ localStorage.setItem(LS, JSON.stringify({name:state.name,answers:state.answers,files:state.files,links:state.links,step:state.step,ts:Date.now()})); flashSaved(); }catch(e){ warnQuota(e); } }
+function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d){ state.name=d.name||""; Object.assign(state.answers,d.answers||{}); if(d.files)Object.assign(state.files,d.files); if(d.links)Object.assign(state.links,d.links); state.step=(typeof d.step==="number")?d.step:-1; } }catch(e){} }
 load();
 let saveTimer=null;
 function flashSaved(){ const t=$("#savetxt"); if(!t)return; t.textContent="Guardado ✓"; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ if($("#savetxt")) $("#savetxt").textContent="Tu avance se guarda en este navegador"; },1500); }
 function warnQuota(){ toast("⚠ Archivo muy grande para guardar. Quita alguna imagen pesada."); }
 
+/* ---------- HELPERS ---------- */
 function $(s){return document.querySelector(s);}
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2400); }
-function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
+/* ---------- CHIPS / PROGRESS ---------- */
 function renderChips(){
   const c=$("#chips"); c.innerHTML="";
   STEPS.forEach((s,i)=>{
@@ -250,6 +288,7 @@ function renderChips(){
 }
 function renderBar(){ const filled=STEPS.filter(s=>state.answers[s.key].trim()).length; $("#bar").style.width=Math.round((filled/TOTAL)*100)+"%"; }
 
+/* ---------- FILES + LINKS ---------- */
 function handleFiles(key, fileList){
   Array.from(fileList).forEach(f=>{
     const item={name:f.name, type:f.type, thumb:null};
@@ -263,13 +302,20 @@ function handleFiles(key, fileList){
   save(); render();
 }
 function removeFile(key,idx){ state.files[key].splice(idx,1); save(); render(); }
+function addLink(key,url){
+  let v=(url||"").trim(); if(!v) return;
+  if(!/^https?:\/\//i.test(v)) v="https://"+v;
+  state.links[key].push(v); save(); render();
+}
+function removeLink(key,idx){ state.links[key].splice(idx,1); save(); render(); }
 
+/* ---------- WELCOME ---------- */
 function renderWelcome(){
   $("#stepArea").innerHTML=`
     <div class="card anim welcome">
       <span class="emoji">🚀</span>
       <h2>${state.name?("¡Hola de nuevo, "+esc(state.name)+"!"):"Construye tu pitch en 5 pasos"}</h2>
-      <p class="lead">En unos minutos tendrás tu pitch de 60 segundos listo para presentar. Responde con tus palabras; al final la herramienta lo arma por ti.</p>
+      <p class="lead">En unos minutos tendrás tu pitch de 60 segundos listo para presentar. Responde con tus palabras; al final la herramienta lo arma y lo corrige por ti.</p>
       <div class="wsteps">
         <span>1 · Problema</span><span>2 · Solución</span><span>3 · Cliente ideal</span><span>4 · Qué te hace distinto</span><span>5 · Qué IAs usa</span>
       </div>
@@ -285,24 +331,28 @@ function renderWelcome(){
   $("#wstart").onclick=()=>{ state.step=Math.max(0,state.step); render(); window.scrollTo({top:0,behavior:"smooth"}); };
 }
 
+/* ---------- STEP ---------- */
 function renderStep(){
   const area=$("#stepArea");
   if(state.step===-1){ renderWelcome(); return; }
   if(state.step===RESULT_INDEX){ renderResult(); return; }
   const s=STEPS[state.step];
-  const files=state.files[s.key];
   area.innerHTML=`
     <div class="card anim">
       <span class="step-no"><span class="dot"></span> Paso ${state.step+1} de ${TOTAL}${state.name?" · "+esc(state.name):""}</span>
       <h2>${s.title}</h2>
       <p class="q">${s.q}</p>
-      <textarea id="ta" placeholder="Escribe aquí con tus propias palabras...">${esc(state.answers[s.key])}</textarea>
+      <textarea id="ta" spellcheck="true" lang="es" placeholder="Escribe aquí con tus propias palabras... (la ortografía se corrige sola al final)">${esc(state.answers[s.key])}</textarea>
       <div class="tip"><b>💡 Tip:</b> ${s.tip}</div>
       <details class="ex"><summary>Ver un ejemplo</summary><p>“${s.example}”</p></details>
       <div class="uploader">
         <div class="drop" id="drop">📎 <b>Sube fotos, documentos o datos</b> que apoyen este punto<br><span style="font-size:12.5px">(arrastra aquí o haz clic · opcional)</span></div>
         <input type="file" id="fileInput" multiple style="display:none">
-        <div class="files" id="filelist"></div>
+        <div class="linkrow">
+          <input type="text" id="linkInput" placeholder="🔗 Pega un enlace (https://...) y presiona Agregar">
+          <button class="ghost" id="addLinkBtn" type="button">+ Enlace</button>
+        </div>
+        <div class="files" id="attachlist"></div>
       </div>
       <div class="nav">
         <button class="ghost" id="prev">← Anterior</button>
@@ -311,31 +361,48 @@ function renderStep(){
     </div>`;
   const ta=$("#ta");
   ta.addEventListener("input",()=>{ state.answers[s.key]=ta.value; save(); renderChips(); renderBar(); });
-  const fl=$("#filelist"); fl.innerHTML="";
-  files.forEach((f,i)=>{
+
+  const list=$("#attachlist"); list.innerHTML="";
+  state.files[s.key].forEach((f,i)=>{
     const d=document.createElement("div"); d.className="file";
     d.innerHTML=(f.thumb?`<img src="${f.thumb}">`:`📄`)+`<span class="nm">${esc(f.name)}</span><span class="x">✕</span>`;
     d.querySelector(".x").onclick=()=>removeFile(s.key,i);
-    fl.appendChild(d);
+    list.appendChild(d);
   });
+  state.links[s.key].forEach((u,i)=>{
+    const d=document.createElement("div"); d.className="file";
+    let host=u; try{host=new URL(u).hostname.replace(/^www\./,"");}catch(e){}
+    d.innerHTML=`🔗<a class="nm" href="${esc(u)}" target="_blank" rel="noopener" style="color:#9fd9ff;text-decoration:none">${esc(host)}</a><span class="x">✕</span>`;
+    d.querySelector(".x").onclick=()=>removeLink(s.key,i);
+    list.appendChild(d);
+  });
+
   const inp=$("#fileInput"), drop=$("#drop");
   drop.onclick=()=>inp.click();
   inp.onchange=e=>handleFiles(s.key,e.target.files);
   drop.ondragover=e=>{e.preventDefault();drop.style.borderColor="#7b2fff";};
   drop.ondragleave=()=>{drop.style.borderColor="";};
   drop.ondrop=e=>{e.preventDefault();drop.style.borderColor="";handleFiles(s.key,e.dataTransfer.files);};
+
+  const li=$("#linkInput"), lb=$("#addLinkBtn");
+  function commitLink(){ addLink(s.key, li.value); }
+  lb.onclick=commitLink;
+  li.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); commitLink(); } });
+
   $("#prev").onclick=()=>{ state.step--; render(); window.scrollTo({top:0,behavior:"smooth"}); };
   $("#next").onclick=()=>{ state.step++; render(); window.scrollTo({top:0,behavior:"smooth"}); };
 }
 
+/* ---------- SCRIPT ---------- */
 function buildScript(){
-  const a=state.answers; const parts=[];
-  if(a.problema.trim()) parts.push(`¿Sabías que ${a.problema.trim().replace(/\.$/,"")}?`);
-  if(a.solucion.trim()) parts.push(`Por eso creamos ${a.solucion.trim().replace(/\.$/,"")}.`);
-  if(a.cliente.trim())  parts.push(`Lo hicimos pensando en ${a.cliente.trim().replace(/\.$/,"")}.`);
-  if(a.distinto.trim()) parts.push(`Lo que nos hace distintos: ${a.distinto.trim().replace(/\.$/,"")}.`);
-  if(a.ias.trim())      parts.push(`Y para lograrlo usamos inteligencia artificial: ${a.ias.trim().replace(/\.$/,"")}.`);
-  parts.push(`${state.name?"Soy "+state.name+". ":""}Si esto te suena, hablemos. 🚀`);
+  const a={}; STEPS.forEach(s=>a[s.key]=autoCorrect(state.answers[s.key]||""));
+  const parts=[];
+  if(a.problema) parts.push(`¿Sabías que ${a.problema.replace(/\.$/,"")}?`);
+  if(a.solucion) parts.push(`Por eso creamos ${a.solucion.replace(/\.$/,"")}.`);
+  if(a.cliente)  parts.push(`Lo hicimos pensando en ${a.cliente.replace(/\.$/,"")}.`);
+  if(a.distinto) parts.push(`Lo que nos hace distintos: ${a.distinto.replace(/\.$/,"")}.`);
+  if(a.ias)      parts.push(`Y para lograrlo usamos inteligencia artificial: ${a.ias.replace(/\.$/,"")}.`);
+  parts.push(`${state.name?"Soy "+autoCorrect(state.name)+". ":""}Si esto te suena, hablemos. 🚀`);
   return parts.join("\n\n");
 }
 function missingFields(){ return STEPS.filter(s=>!state.answers[s.key].trim()).map(s=>s.label); }
@@ -349,15 +416,24 @@ function renderResult(){
     <div class="card anim result">
       <span class="step-no"><span class="dot"></span> Tu pitch de 60 segundos${state.name?" · "+esc(state.name):""}</span>
       <h2>🎤 Mi pitch</h2>
-      ${missing.length?`<div class="tip"><b>Faltan datos:</b> ${missing.join(", ")}. Complétalos para un mejor pitch, o usa “Completar con IA”.</div>`:""}
+      ${missing.length?`<div class="tip"><b>Faltan datos:</b> ${missing.join(", ")}. Complétalos para un mejor pitch, o usa “Refinar con IA”.</div>`:""}
       <div class="script" id="script">${esc(script)}</div>
       <div class="wordcount">📊 ${words} palabras · apunta a 130–160 palabras para que quepa en 60 segundos.</div>
+      <div class="corrnote">✍️ Texto corregido automáticamente (mayúsculas, tildes y errores comunes).</div>
+
+      <div class="ia-box">
+        <h3>🤖 Refinar o ajustar tu pitch con IA</h3>
+        <p>Genera un mensaje con tu pitch, tus respuestas, archivos y enlaces. Cópialo y pégalo en ChatGPT, Claude o Gemini para que lo refine, corrija y complete lo que falte.</p>
+        <button class="primary" id="iaprompt">✨ Refinar mi pitch con IA</button>
+      </div>
+
       <div class="actions">
         <button class="primary" id="copy">📋 Copiar pitch</button>
         <button class="ghost" id="dltxt">⬇ Descargar TXT</button>
         <button class="ghost" id="dlpdf">🖨 Descargar PDF</button>
         <button class="ghost" id="edit">✏️ Editar respuestas</button>
       </div>
+
       <div class="timer">
         <div class="clock" id="clock">01:00</div>
         <div class="timerbtns">
@@ -365,36 +441,32 @@ function renderResult(){
           <button class="ghost" id="treset">↺ Reiniciar</button>
         </div>
       </div>
-      <div class="ia-box">
-        <h3>🤖 Completar con IA lo que falta</h3>
-        <p>Genera un mensaje listo con tus respuestas y archivos. Cópialo y pégalo en ChatGPT, Claude o Gemini: la IA pulirá tu pitch y completará lo que falte.</p>
-        <button class="primary" id="iaprompt">✨ Generar mensaje para la IA</button>
-      </div>
     </div>`;
+  $("#iaprompt").onclick=()=>navigator.clipboard.writeText(buildAIPrompt()).then(()=>toast("Mensaje para la IA copiado. Pégalo en tu IA ✨"));
   $("#copy").onclick=()=>navigator.clipboard.writeText(buildScript()).then(()=>toast("¡Pitch copiado! ✅"));
   $("#dltxt").onclick=()=>downloadText((state.name?state.name.replace(/\s+/g,"-")+"-":"")+"mi-pitch.txt", buildScript());
   $("#dlpdf").onclick=()=>window.print();
   $("#edit").onclick=()=>{ state.step=0; render(); window.scrollTo({top:0,behavior:"smooth"}); };
-  $("#iaprompt").onclick=()=>navigator.clipboard.writeText(buildAIPrompt()).then(()=>toast("Mensaje para la IA copiado. Pégalo en tu IA ✨"));
   setupTimer();
 }
 
 function buildAIPrompt(){
-  const a=state.answers;
-  let p="Actúa como experto en marketing y oratoria. Ayúdame a pulir y completar mi pitch de 60 segundos (130-160 palabras) para presentar mi negocio. ";
+  let p="Actúa como experto en marketing y oratoria. Corrige la ortografía y redacción, y pule mi pitch de 60 segundos (130-160 palabras) para presentar mi negocio. ";
   p+="Si algún punto está vacío o incompleto, propón una versión sugerida basada en el resto y márcala como [SUGERENCIA].\n\n";
   if(state.name) p+="Mi nombre: "+state.name+"\n";
-  p+="Mis respuestas:\n";
+  p+="Borrador actual de mi pitch:\n\""+buildScript()+"\"\n\n";
+  p+="Mis respuestas por bloque:\n";
   STEPS.forEach(s=>{
-    const val=a[s.key].trim();
+    const val=(state.answers[s.key]||"").trim();
     p+=`- ${s.title}: ${val?val:"(vacío, por favor complétalo)"}\n`;
-    const fs=state.files[s.key];
-    if(fs&&fs.length) p+=`   (Archivos de apoyo que tengo: ${fs.map(f=>f.name).join(", ")})\n`;
+    const fs=state.files[s.key]; if(fs&&fs.length) p+=`   (Archivos de apoyo: ${fs.map(f=>f.name).join(", ")})\n`;
+    const ls=state.links[s.key]; if(ls&&ls.length) p+=`   (Enlaces de referencia: ${ls.join(", ")})\n`;
   });
-  p+="\nEntrégame: 1) el pitch final listo para leer en voz alta, 2) una versión corta de 1 frase (elevator pitch), 3) 2 consejos para decirlo con más impacto.";
+  p+="\nEntrégame: 1) el pitch final corregido y listo para leer en voz alta, 2) una versión corta de 1 frase (elevator pitch), 3) 2 consejos para decirlo con más impacto.";
   return p;
 }
 
+/* ---------- TIMER ---------- */
 let tInt=null, tLeft=60;
 function fmt(n){ const m=Math.floor(Math.abs(n)/60), s=Math.abs(n)%60; return (n<0?"-":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"); }
 function setupTimer(){
@@ -410,12 +482,14 @@ function setupTimer(){
   $("#treset").onclick=()=>{ if(tInt){clearInterval(tInt);tInt=null;} tLeft=60; clock.textContent="01:00"; clock.className="clock"; $("#tstart").textContent="▶ Practicar 60s"; };
 }
 
+/* ---------- DOWNLOAD ---------- */
 function downloadText(filename,text){
   const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
   const url=URL.createObjectURL(blob); const a=document.createElement("a");
   a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); toast("Descargado ⬇");
 }
 
+/* ---------- LEGAL + RESET ---------- */
 $("#openLegal").onclick=()=>$("#legalModal").classList.add("show");
 $("#closeLegal").onclick=()=>$("#legalModal").classList.remove("show");
 $("#legalModal").onclick=e=>{ if(e.target.id==="legalModal") $("#legalModal").classList.remove("show"); };
@@ -428,6 +502,7 @@ const Y=new Date().getFullYear();
 $("#year").textContent=Y; $("#legalYear").textContent=Y;
 if($("#legalYear2")) $("#legalYear2").textContent=Y;
 
+/* ---------- PARTICLES ---------- */
 (function(){
   const cv=document.getElementById("particles"), ctx=cv.getContext("2d");
   let w,h,pts; const N=Math.min(70, Math.floor(window.innerWidth/22));
@@ -451,9 +526,9 @@ if($("#legalYear2")) $("#legalYear2").textContent=Y;
   window.addEventListener("resize",()=>{ resize(); init(); });
 })();
 
+/* ---------- MAIN ---------- */
 function render(){ renderChips(); renderBar(); renderStep(); save(); }
 render();
 </script>
 </body>
 </html>
-                   
